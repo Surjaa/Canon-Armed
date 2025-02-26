@@ -5,8 +5,32 @@ import time
 # Initialize Pygame
 pygame.init()
 
-# Set up the game window
-WIDTH, HEIGHT = 800, 600
+
+# Function to get the game dimensions based on screen width
+def get_game_dimensions():
+    info = pygame.display.Info()
+    screen_width = info.current_w
+    
+    if screen_width <= 480:
+        # Small Phones
+        return (320, 568)
+    elif screen_width <= 640:
+        # Medium Phones
+        return (480, 854)
+    elif screen_width <= 768:
+        # Large Phones
+        return (640, 1136)
+    elif screen_width <= 1024:
+        # Small Tablets
+        return (768, 1024)
+    # else:
+    #     # Defaults to a larger device or desktop size
+    #     return (800, 600)  # Default size if none of the conditions above are met
+    return (400, 600)
+
+
+# Get dynamic dimensions
+WIDTH, HEIGHT = get_game_dimensions()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Canon Armed')
 
@@ -23,24 +47,26 @@ TEXT_COLOR = (255, 255, 255)
 background = pygame.image.load('Images/background.jpg')
 background = pygame.transform.scale(background, (WIDTH, HEIGHT))
 
-# Load vehicle image
-vehicle_image = pygame.image.load('Images/canon.png') 
-vehicle_image = pygame.transform.scale(vehicle_image, (50, 80)) 
-
 # Load sounds
 pygame.mixer.music.load('Images/background_sound.mp3')
 hit_sound = pygame.mixer.Sound('Images/hit-sound.mp3')
 
-# Vehicle setup
-vehicle_width = 50
-vehicle_height = 80
+# Load and scale images
+background = pygame.image.load('Images/background.jpg')
+background = pygame.transform.scale(background, (WIDTH, HEIGHT))
+
+vehicle_image = pygame.image.load('Images/canon.png')
+# Vehicle setup with new dimensions
+vehicle_width = 35
+vehicle_height = 50
+vehicle_image = pygame.transform.scale(vehicle_image, (vehicle_width, vehicle_height))
 vehicle_x = WIDTH // 2 - vehicle_width // 2
-vehicle_y = HEIGHT - vehicle_height - 10
+vehicle_y = HEIGHT - vehicle_height - 5
 vehicle_speed = 10
 
 # Bullet setup
 bullet_width = 5
-bullet_height = 10
+bullet_height = 5
 bullet_speed = 15
 bullets = []
 fire_bullets = False
@@ -48,8 +74,8 @@ last_bullet_time = 0
 bullet_interval = 250  # milliseconds
 
 # Obstacle setup
-obstacle_width = 50
-obstacle_height = 50
+obstacle_width = 40
+obstacle_height = 40
 obstacle_speed = 5
 obstacles = []
 
@@ -57,14 +83,17 @@ obstacles = []
 score = 0
 font = pygame.font.SysFont('arial', 30)
 
+
 # Create the vehicle
 def draw_vehicle(x, y):
     screen.blit(vehicle_image, (x, y))
+
 
 # Create bullets
 def draw_bullets(bullets):
     for bullet in bullets:
         pygame.draw.rect(screen, WHITE, bullet)
+
 
 def move_bullets(bullets):
     for bullet in bullets[:]:
@@ -72,15 +101,18 @@ def move_bullets(bullets):
         if bullet.y < 0:
             bullets.remove(bullet)
 
+
 # Create obstacles
 def draw_obstacles(obstacles):
     for obstacle in obstacles:
         pygame.draw.rect(screen, RED, obstacle)
 
+
 def create_obstacle():
     x = random.randint(0, WIDTH - obstacle_width)
     y = -obstacle_height
     return pygame.Rect(x, y, obstacle_width, obstacle_height)
+
 
 # Check for collision
 def check_collision(vehicle, obstacles):
@@ -88,6 +120,7 @@ def check_collision(vehicle, obstacles):
         if vehicle.colliderect(obstacle):
             return True
     return False
+
 
 def check_bullet_collision(bullets, obstacles):
     global score
@@ -100,10 +133,12 @@ def check_bullet_collision(bullets, obstacles):
                 hit_sound.play()
                 break
 
+
 # Display score
 def show_score():
     score_text = font.render(f"Score: {score}", True, WHITE)
     screen.blit(score_text, (10, 10))
+
 
 # Play Button Design
 def draw_play_button():
@@ -115,6 +150,7 @@ def draw_play_button():
     play_text = font.render("Play", True, TEXT_COLOR)
     screen.blit(play_text, (WIDTH // 2 - play_text.get_width() // 2, HEIGHT // 2 - play_text.get_height() // 2))
     return button_rect
+
 
 # Game loop
 running = True
@@ -131,12 +167,11 @@ while running:
     current_time = pygame.time.get_ticks()
 
     if not game_started:
-        draw_play_button()
+        play_button_rect = draw_play_button()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                play_button_rect = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 - 50, 200, 100)
                 if play_button_rect.collidepoint(event.pos):
                     game_started = True
                     pygame.mixer.music.play(-1)
